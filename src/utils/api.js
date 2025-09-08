@@ -10,6 +10,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // Request interceptor to add auth token
@@ -19,6 +20,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    const sessionId = localStorage.getItem("sessionId") || "anonymous-session";
+    config.headers["session-id"] = sessionId;
     return config;
   },
   (error) => {
@@ -35,6 +38,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid
       localStorage.removeItem("token");
+      localStorage.removeItem("sessionId");
       // Optionally redirect to login page
       window.location.href = "/login";
     }
